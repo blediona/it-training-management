@@ -1,25 +1,55 @@
-# Compiled class file
+# Maven / Java build files
+target/
+out/
+build/
 *.class
 
-# Log file
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
 *.log
+logs/
 
-# BlueJ files
-*.ctxt
+# Environment / secrets
+.env
+.env.*
+*.properties.local
+application-local.properties
+config-local.properties
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+# Database backups / dumps
+backups/
+database/backups/
+*.dump
+*.backup
+*_backup.sql
+*_dump.sql
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+*.bak
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# JavaFX / runtime generated files
 hs_err_pid*
 replay_pid*
-.idea/
+
+# Keep database scripts that should be versioned
+!database/databaza_total.sql
+!database/backup_database.ps1
+!database/migrations/
+!database/migrations/*.sql
