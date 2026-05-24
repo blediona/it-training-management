@@ -51,4 +51,16 @@ public class TrainingService {
     public ArrayList<Training> getAll() {
         return trainingRepository.getAll();
     }
+
+    public boolean existsByName(String name) {
+        return trainingRepository.existsByName(name);
+    }
+
+    public Integer findIdByName(String name) {
+        return trainingRepository.findIdByName(name);
+    }
+
+    public Double findPriceByName(String name) {
+        return trainingRepository.findPriceByName(name);
+    }
 }
