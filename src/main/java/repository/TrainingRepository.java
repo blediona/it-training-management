@@ -51,4 +51,56 @@ public class TrainingRepository {
         }
         return trainings;
     }
+
+    public boolean existsByName(String name) {
+        String query = "SELECT COUNT(*) FROM trainings WHERE LOWER(name) = LOWER(?)";
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setString(1, name == null ? "" : name.trim());
+            try (ResultSet res = pstm.executeQuery()) {
+                return res.next() && res.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    public Integer findIdByName(String name) {
+        String query = "SELECT id FROM trainings WHERE LOWER(name) = LOWER(?)";
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setString(1, name == null ? "" : name.trim());
+            try (ResultSet res = pstm.executeQuery()) {
+                if (res.next()) {
+                    return res.getInt("id");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    public Double findPriceByName(String name) {
+        String query = "SELECT price FROM trainings WHERE LOWER(name) = LOWER(?)";
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setString(1, name == null ? "" : name.trim());
+            try (ResultSet res = pstm.executeQuery()) {
+                if (res.next()) {
+                    return res.getDouble("price");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
 }
