@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane prefHeight="760" prefWidth="1180"
+            styleClass="app-root"
+            stylesheets="@../styles/app.css"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.TrainingController">
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" prefHeight="72" spacing="18" styleClass="app-header">
+                <padding>
+                    <Insets left="28" right="28"/>
+                </padding>
+                <Label text="%training.title" styleClass="brand-title">
+                    <font><Font size="26"/></font>
+                </Label>
+                <Label text="%training.subtitle" styleClass="brand-subtitle"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#handleOpenDashboard" text="%nav.dashboard" styleClass="nav-button"/>
+                <Button onAction="#handleOpenTrainings" text="%nav.trainings" styleClass="nav-button-active"/>
+                <Button fx:id="paymentsButton" onAction="#handleOpenPayments" text="%nav.payments" styleClass="nav-button"/>
+                <Button fx:id="certificatesButton" onAction="#handleOpenCertificates" text="%nav.certificates" styleClass="nav-button"/>
+                <Button fx:id="staffButton" onAction="#handleOpenStaff" text="%nav.staff" styleClass="nav-button"/>
+                <Button onAction="#handleShowHelp" text="%menu.help" styleClass="nav-button"/>
+                <MenuButton fx:id="languageMenuButton" text="%menu.language" styleClass="nav-button">
+                    <items>
+                        <MenuItem onAction="#handleAlbanianLanguage" text="Shqip">
+                            <graphic>
+                                <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                    <image><Image url="@../images/flags/al.png"/></image>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                        <MenuItem onAction="#handleEnglishLanguage" text="English">
+                            <graphic>
+                                <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                    <image><Image url="@../images/flags/gb.png"/></image>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                        <MenuItem onAction="#handleGermanLanguage" text="Deutsch">
+                            <graphic>
+                                <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                    <image><Image url="@../images/flags/de.png"/></image>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                    </items>
+                </MenuButton>
+                <Button onAction="#handleLogout" text="%nav.logout" styleClass="nav-button-active"/>
+            </HBox>
+            <ToolBar styleClass="app-toolbar">
+                <Button onAction="#handleToggleTrainingForm" text="%action.toggleSidebar" styleClass="secondary-button"/>
+                <Separator/>
+                <TextField fx:id="searchField" onAction="#handleSearch" prefWidth="360" promptText="%search.prompt"/>
+                <Button onAction="#handleSearch" text="%action.search" styleClass="secondary-button"/>
+                <Separator/>
+                <Button fx:id="createTrainerAccountButton" onAction="#handleCreateTrainerAccount" text="%training.createTrainerAccount" styleClass="secondary-button"/>
+            </ToolBar>
+        </VBox>
+    </top>
+
+    <center>
+        <HBox spacing="18">
+            <padding>
+                <Insets bottom="24" left="24" right="24" top="24"/>
+            </padding>
+
+            <VBox fx:id="trainingFormPane" prefWidth="320" spacing="14" styleClass="surface">
+                <padding><Insets bottom="22" left="22" right="22" top="22"/></padding>
+                <Label text="%training.new" styleClass="section-title">
+                    <font><Font size="22"/></font>
+                </Label>
+                <TextField fx:id="nameField" promptText="%training.name"/>
+                <VBox spacing="3">
+                    <Label fx:id="instructorErrorLabel" visible="false" managed="false" styleClass="error-text"/>
+                    <TextField fx:id="instructorField" promptText="%training.instructor"/>
+                </VBox>
+                <TextField fx:id="instructorEmailField" promptText="%training.instructorEmail"/>
+                <TextField fx:id="priceField" promptText="%training.price"/>
+                <ComboBox fx:id="levelComboBox" prefWidth="280" promptText="%training.level"/>
+                <TextArea fx:id="descriptionArea" prefHeight="96" promptText="%training.description"/>
+                <DatePicker fx:id="startDatePicker" prefWidth="280" promptText="%training.startDate"/>
+                <DatePicker fx:id="endDatePicker" prefWidth="280" promptText="%training.endDate"/>
+                <TextField fx:id="capacityField" promptText="%training.capacity"/>
+                <Button onAction="#handleSaveTraining" prefHeight="42" prefWidth="280" text="%training.save" styleClass="primary-button"/>
+            </VBox>
+
+            <VBox spacing="14" HBox.hgrow="ALWAYS">
+                <HBox spacing="14">
+                    <VBox prefWidth="180" styleClass="metric-card">
+                        <Label text="%training.active" styleClass="metric-label"/>
+                        <Label fx:id="activeProgramsLabel" text="0" styleClass="metric-value"/>
+                    </VBox>
+                    <VBox prefWidth="180" styleClass="metric-card">
+                        <Label text="%training.instructors" styleClass="metric-label"/>
+                        <Label fx:id="instructorCountLabel" text="0" styleClass="metric-value"/>
+                    </VBox>
+                    <VBox prefWidth="220" styleClass="metric-card">
+                        <Label text="%training.averagePrice" styleClass="metric-label"/>
+                        <Label fx:id="averagePriceLabel" text="0 EUR" styleClass="metric-value"/>
+                    </VBox>
+                </HBox>
+
+                <TableView fx:id="trainingsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="idColumn" prefWidth="70" text="ID"/>
+                        <TableColumn fx:id="nameColumn" prefWidth="250" text="%training.name"/>
+                        <TableColumn fx:id="instructorColumn" prefWidth="220" text="%training.instructor"/>
+                        <TableColumn fx:id="priceColumn" prefWidth="140" text="%training.price"/>
+                        <TableColumn fx:id="levelColumn" prefWidth="140" text="%training.level"/>
+                        <TableColumn fx:id="capacityColumn" prefWidth="120" text="%training.capacity"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

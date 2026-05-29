@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane prefHeight="760" prefWidth="1180"
+            styleClass="app-root"
+            stylesheets="@../styles/app.css"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.HelpController">
+    <top>
+        <HBox alignment="CENTER_LEFT" prefHeight="72" spacing="18" styleClass="app-header">
+            <padding><Insets left="28" right="28"/></padding>
+            <Label text="%help.title" styleClass="brand-title">
+                <font><Font size="26"/></font>
+            </Label>
+            <Label text="%app.subtitle" styleClass="brand-subtitle"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button onAction="#handleOpenDashboard" text="%nav.dashboard" styleClass="nav-button"/>
+            <Button onAction="#handleOpenTrainings" text="%nav.trainings" styleClass="nav-button"/>
+            <Button fx:id="paymentsButton" onAction="#handleOpenPayments" text="%nav.payments" styleClass="nav-button"/>
+            <Button fx:id="certificatesButton" onAction="#handleOpenCertificates" text="%nav.certificates" styleClass="nav-button"/>
+            <Button onAction="#handleShowHelp" text="%menu.help" styleClass="nav-button-active"/>
+            <MenuButton fx:id="languageMenuButton" text="%menu.language" styleClass="nav-button">
+                <items>
+                    <MenuItem onAction="#handleAlbanianLanguage" text="Shqip">
+                        <graphic>
+                            <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                <image><Image url="@../images/flags/al.png"/></image>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                    <MenuItem onAction="#handleEnglishLanguage" text="English">
+                        <graphic>
+                            <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                <image><Image url="@../images/flags/gb.png"/></image>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                    <MenuItem onAction="#handleGermanLanguage" text="Deutsch">
+                        <graphic>
+                            <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                <image><Image url="@../images/flags/de.png"/></image>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                </items>
+            </MenuButton>
+            <Button onAction="#handleLogout" text="%nav.logout" styleClass="nav-button-active"/>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="18">
+            <padding><Insets bottom="30" left="36" right="36" top="30"/></padding>
+            <Label text="%help.systemUsage" styleClass="page-title">
+                <font><Font size="30"/></font>
+            </Label>
+            <Accordion>
+                <panes>
+                    <TitledPane expanded="true" text="%help.candidatePane">
+                        <Label wrapText="true" text="%help.candidateText"/>
+                    </TitledPane>
+                    <TitledPane text="%help.paymentsPane">
+                        <Label wrapText="true" text="%help.paymentsText"/>
+                    </TitledPane>
+                    <TitledPane text="%help.certificatesPane">
+                        <Label wrapText="true" text="%help.certificatesText"/>
+                    </TitledPane>
+                    <TitledPane text="%help.shortcutsPane">
+                        <Label wrapText="true" text="%help.content"/>
+                    </TitledPane>
+                    <TitledPane text="%help.localizationPane">
+                        <Label wrapText="true" text="%help.localizationText"/>
+                    </TitledPane>
+                </panes>
+            </Accordion>
+        </VBox>
+    </center>
+</BorderPane>
