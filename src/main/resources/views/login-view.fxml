@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane prefHeight="620" prefWidth="980"
+           styleClass="auth-root"
+           stylesheets="@../styles/app.css"
+           xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controllers.LoginController">
+
+    <HBox maxHeight="620" maxWidth="980" minHeight="560" minWidth="900" styleClass="auth-card">
+
+        <VBox alignment="CENTER_LEFT" prefWidth="440" spacing="18"
+              styleClass="brand-panel">
+            <padding>
+                <Insets bottom="40" left="40" right="40" top="40"/>
+            </padding>
+            <Label text="%app.title" styleClass="brand-title">
+                <font>
+                    <Font size="34"/>
+                </font>
+            </Label>
+            <Label wrapText="true"
+                   text="%auth.tagline"
+                   styleClass="brand-subtitle">
+                <font>
+                    <Font size="16"/>
+                </font>
+            </Label>
+            <MenuButton fx:id="languageMenuButton" text="%menu.language" styleClass="language-button-active">
+                <items>
+                    <MenuItem onAction="#handleAlbanianLanguage" text="Shqip">
+                        <graphic>
+                            <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                <image><Image url="@../images/flags/al.png"/></image>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                    <MenuItem onAction="#handleEnglishLanguage" text="English">
+                        <graphic>
+                            <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                <image><Image url="@../images/flags/gb.png"/></image>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                    <MenuItem onAction="#handleGermanLanguage" text="Deutsch">
+                        <graphic>
+                            <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                <image><Image url="@../images/flags/de.png"/></image>
+                            </ImageView>
+                        </graphic>
+                    </MenuItem>
+                </items>
+            </MenuButton>
+        </VBox>
+
+        <VBox alignment="CENTER" spacing="16" prefWidth="460" HBox.hgrow="ALWAYS">
+            <padding>
+                <Insets bottom="35" left="35" right="35" top="35"/>
+            </padding>
+            <Label text="%auth.login">
+                <font>
+                    <Font size="32"/>
+                </font>
+            </Label>
+            <Label text="%auth.welcome" styleClass="muted-text"/>
+            <TextField fx:id="usernameField" maxWidth="520" prefHeight="42" promptText="%auth.username"/>
+            <HBox maxWidth="520" spacing="6">
+                <StackPane HBox.hgrow="ALWAYS">
+                    <PasswordField fx:id="passwordField" prefHeight="42" promptText="%auth.password"/>
+                    <TextField fx:id="visiblePasswordField" prefHeight="42" promptText="%auth.password"/>
+                </StackPane>
+                <Button onAction="#handleTogglePasswordVisibility" prefHeight="42" prefWidth="42" styleClass="icon-button" text="👁"/>
+            </HBox>
+            <Button fx:id="loginButton" onAction="#handleLogin" prefHeight="44" prefWidth="300"
+                    styleClass="primary-button"
+                    text="%auth.login"/>
+            <Hyperlink onAction="#handleForgotPassword" text="%auth.forgot"/>
+            <Label fx:id="messageLabel" styleClass="error-text"/>
+        </VBox>
+    </HBox>
+</StackPane>

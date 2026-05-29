@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class UserRepository extends BaseRepository<User> {
     @Override
@@ -82,6 +83,10 @@ public class UserRepository extends BaseRepository<User> {
         return null;
     }
 
+    public boolean existsByUsername(String username) {
+        return getByUsername(username) != null;
+    }
+
     public User getByEmail(String email) {
         String query = """
                 SELECT u.*, r.name AS role
@@ -102,6 +107,73 @@ public class UserRepository extends BaseRepository<User> {
             System.out.println(e.getMessage());
         }
         return null;
+    }
+
+    public boolean existsByEmail(String email) {
+        return getByEmail(email) != null;
+    }
+
+    public boolean updatePassword(int userId, String salt, String saltedHash) {
+        String query = """
+                UPDATE users
+                SET salt = ?, salted_hash = ?
+                WHERE id = ?
+                """;
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setString(1, salt);
+            pstm.setString(2, saltedHash);
+            pstm.setInt(3, userId);
+            return pstm.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    public boolean updateRole(int userId, String roleName) {
+        String query = """
+                UPDATE users
+                SET role_id = (SELECT id FROM roles WHERE name = ?)
+                WHERE id = ?
+                """;
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setString(1, roleName);
+            pstm.setInt(2, userId);
+            return pstm.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    public ArrayList<User> getByRole(String roleName) {
+        String query = """
+                SELECT u.*, r.name AS role
+                FROM users u
+                INNER JOIN roles r ON r.id = u.role_id
+                WHERE r.name = ?
+                ORDER BY u.full_name
+                """;
+        ArrayList<User> users = new ArrayList<>();
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setString(1, roleName);
+            ResultSet res = pstm.executeQuery();
+            while (res.next()) {
+                users.add(getMapper().getFromResultSet(res));
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return users;
     }
 
     @Override
