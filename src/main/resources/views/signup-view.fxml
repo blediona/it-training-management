@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane prefHeight="620" prefWidth="980"
+           styleClass="auth-root"
+           stylesheets="@../styles/app.css"
+           xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controllers.SignupController">
+
+    <VBox fx:id="signupCard" alignment="CENTER" focusTraversable="true" maxWidth="520" spacing="14" styleClass="auth-card">
+        <padding>
+            <Insets bottom="28" left="28" right="28" top="28"/>
+        </padding>
+        <Label text="%auth.createAccount">
+            <font>
+                <Font size="30"/>
+            </font>
+        </Label>
+        <Label text="%auth.signupSubtitle" styleClass="muted-text"/>
+
+        <VBox maxWidth="420" spacing="3">
+            <Label fx:id="fullNameErrorLabel" visible="false" managed="false" styleClass="error-text"/>
+            <TextField fx:id="fullNameField" prefHeight="40" promptText="%auth.fullName"/>
+        </VBox>
+        <TextField fx:id="emailField" maxWidth="420" prefHeight="40" promptText="%candidate.email"/>
+        <TextField fx:id="usernameField" maxWidth="420" prefHeight="40" promptText="%auth.username"/>
+        <PasswordField fx:id="passwordField" maxWidth="420" prefHeight="40" promptText="%auth.password"/>
+        <PasswordField fx:id="confirmPasswordField" maxWidth="420" prefHeight="40" promptText="%auth.confirmPassword"/>
+
+        <Button onAction="#handleSignup" prefHeight="42" prefWidth="330" styleClass="primary-button" text="%auth.signup"/>
+        <Hyperlink onAction="#handleGoToLogin" text="%auth.backLogin"/>
+        <Label fx:id="messageLabel" styleClass="error-text"/>
+    </VBox>
+</StackPane>
