@@ -7,9 +7,12 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -37,6 +40,7 @@ public class TrainingController {
     @FXML private VBox trainingFormPane;
     @FXML private TextField searchField;
     @FXML private TextField instructorField;
+    @FXML private TextField instructorEmailField;
     @FXML private Label instructorErrorLabel;
     @FXML private TextField priceField;
     @FXML private ComboBox<String> levelComboBox;
@@ -49,6 +53,8 @@ public class TrainingController {
     @FXML private Label averagePriceLabel;
     @FXML private Button paymentsButton;
     @FXML private Button certificatesButton;
+    @FXML private Button staffButton;
+    @FXML private Button createTrainerAccountButton;
     @FXML private MenuButton languageMenuButton;
     @FXML private TableView<Training> trainingsTable;
     @FXML private TableColumn<Training, Integer> idColumn;
@@ -63,9 +69,29 @@ public class TrainingController {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         instructorColumn.setCellValueFactory(new PropertyValueFactory<>("instructor"));
+        instructorColumn.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                getStyleClass().remove("missing-trainer-account-cell");
+                if (empty || item == null) {
+                    setText(null);
+                    return;
+                }
+                setText(item);
+                Training training = getTableRow() == null ? null : getTableRow().getItem();
+                if (training != null && training.getTrainerUserId() <= 0) {
+                    getStyleClass().add("missing-trainer-account-cell");
+                }
+            }
+        });
         priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
         levelColumn.setCellValueFactory(new PropertyValueFactory<>("level"));
         capacityColumn.setCellValueFactory(new PropertyValueFactory<>("capacity"));
+        MenuItem deleteItem = new MenuItem(I18nService.get("training.delete"));
+        deleteItem.setOnAction(event -> handleDeleteTraining());
+        trainingsTable.setContextMenu(new ContextMenu(deleteItem));
+        trainingsTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> updateCreateTrainerAccountButtonState(newValue));
         levelComboBox.setItems(FXCollections.observableArrayList("Beginner", "Intermediate", "Advanced"));
         levelComboBox.setValue("Beginner");
         capacityField.setText("20");
@@ -95,6 +121,7 @@ public class TrainingController {
             trainingService.save(
                     nameField.getText(),
                     instructorField.getText(),
+                    instructorEmailField.getText(),
                     price,
                     levelComboBox.getValue(),
                     descriptionArea.getText(),
@@ -111,9 +138,53 @@ public class TrainingController {
         }
     }
 
+    @FXML
+    private void handleDeleteTraining() {
+        Training selected = trainingsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showWarning(I18nService.get("training.selectToDelete"));
+            return;
+        }
+        if (!confirmAction(I18nService.get("training.delete"), String.format(I18nService.get("training.confirmDelete"), selected.getName()))) {
+            return;
+        }
+        try {
+            trainingService.delete(selected.getId());
+            clearForm();
+            loadTrainings();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            showWarning(e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleCreateTrainerAccount() {
+        Training selected = trainingsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showWarning(I18nService.get("training.selectToCreateTrainerAccount"));
+            return;
+        }
+        try {
+            TrainingService.TrainerAccountResult result = trainingService.createTrainerAccount(selected.getId());
+            if (result.isCreated()) {
+                showInfo(String.format(
+                        I18nService.get("training.trainerAccountCreated"),
+                        result.getUser().getUsername(),
+                        result.getInitialPassword()
+                ));
+            } else {
+                showInfo(String.format(I18nService.get("training.trainerAccountLinked"), result.getUser().getUsername()));
+            }
+            loadTrainings();
+        } catch (IllegalArgumentException e) {
+            showWarning(e.getMessage());
+        }
+    }
+
     private void clearForm() {
         nameField.clear();
         instructorField.clear();
+        instructorEmailField.clear();
         priceField.clear();
         descriptionArea.clear();
         startDatePicker.setValue(null);
@@ -180,6 +251,14 @@ public class TrainingController {
     }
 
     @FXML
+    private void handleOpenStaff() {
+        if (!ensureAdminAccess()) {
+            return;
+        }
+        SceneService.loadView("staff-view.fxml", I18nService.get("staff.title"));
+    }
+
+    @FXML
     private void handleLogout() {
         if (!confirmAction(I18nService.get("confirm.logout.title"), I18nService.get("confirm.logout"))) {
             return;
@@ -191,6 +270,7 @@ public class TrainingController {
     private void loadTrainings() {
         trainings.setAll(trainingService.getAll());
         trainingsTable.setItems(trainings);
+        updateCreateTrainerAccountButtonState(trainingsTable.getSelectionModel().getSelectedItem());
         activeProgramsLabel.setText(String.valueOf(trainings.size()));
         instructorCountLabel.setText(String.valueOf(trainings.stream().map(Training::getInstructor).distinct().count()));
         double average = trainings.stream().mapToDouble(Training::getPrice).average().orElse(0);
@@ -223,6 +303,14 @@ public class TrainingController {
         alert.showAndWait();
     }
 
+    private void showInfo(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(I18nService.get("dialog.info"));
+        alert.setHeaderText(I18nService.get("dialog.success"));
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     private boolean ensureAdminAccess() {
         if (SessionService.isAdmin()) {
             return true;
@@ -233,10 +321,30 @@ public class TrainingController {
 
     private void prepareRoleAccess() {
         boolean admin = SessionService.isAdmin();
+        if (SessionService.isTrainer()) {
+            showWarning(I18nService.get("access.denied.trainer"));
+            SceneService.loadView("main-view.fxml", I18nService.get("app.title"));
+            return;
+        }
         paymentsButton.setDisable(!admin);
         certificatesButton.setDisable(!admin);
+        staffButton.setDisable(!admin);
+        staffButton.setVisible(admin);
+        staffButton.setManaged(admin);
+        createTrainerAccountButton.setVisible(admin);
+        createTrainerAccountButton.setManaged(admin);
+        updateCreateTrainerAccountButtonState(trainingsTable == null ? null : trainingsTable.getSelectionModel().getSelectedItem());
         paymentsButton.setTooltip(new javafx.scene.control.Tooltip(admin ? I18nService.get("nav.payments") : I18nService.get("access.denied.staff")));
         certificatesButton.setTooltip(new javafx.scene.control.Tooltip(admin ? I18nService.get("nav.certificates") : I18nService.get("access.denied.staff")));
+        staffButton.setTooltip(new javafx.scene.control.Tooltip(admin ? I18nService.get("nav.staff") : I18nService.get("access.denied.staff")));
+    }
+
+    private void updateCreateTrainerAccountButtonState(Training selected) {
+        if (createTrainerAccountButton == null) {
+            return;
+        }
+        boolean enabled = SessionService.isAdmin() && selected != null;
+        createTrainerAccountButton.setDisable(!enabled);
     }
 
     private void applyLanguageButtonStyles() {
@@ -259,7 +367,11 @@ public class TrainingController {
 
     private boolean validateInstructorField() {
         String value = instructorField.getText() == null ? "" : instructorField.getText().trim();
-        boolean valid = !value.isEmpty() && value.matches(NAME_INPUT_PATTERN);
+        if (value.isEmpty()) {
+            setFieldError(instructorErrorLabel, instructorField, "");
+            return false;
+        }
+        boolean valid = value.matches(NAME_INPUT_PATTERN);
         setFieldError(instructorErrorLabel, instructorField, valid ? "" : I18nService.get("validation.name.letters"));
         return valid;
     }
