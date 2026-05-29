@@ -27,6 +27,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -35,9 +36,11 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import models.Candidate;
 import models.CandidateStatus;
+import models.Training;
 import models.dto.CandidateRequestDto;
 import models.dto.DashboardStats;
 import services.CandidateService;
@@ -48,6 +51,7 @@ import services.TrainingService;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class MainController {
     private static final String NAME_INPUT_PATTERN = "[A-Za-zÇËçë ]*";
@@ -59,6 +63,8 @@ public class MainController {
 
     @FXML private BorderPane rootPane;
     @FXML private VBox candidateFormPane;
+    @FXML private HBox trainerAccountNoticeBar;
+    @FXML private Label trainerAccountNoticeLabel;
     @FXML private TabPane contentTabPane;
     @FXML private Tab dashboardTab;
     @FXML private TableView<Candidate> candidatesTable;
@@ -77,6 +83,8 @@ public class MainController {
     @FXML private TextField totalFeeField;
     @FXML private TextField paidAmountField;
     @FXML private TextField searchField;
+    @FXML private Label trainerTrainingLabel;
+    @FXML private ComboBox<String> trainerTrainingComboBox;
     @FXML private Label firstNameErrorLabel;
     @FXML private Label lastNameErrorLabel;
     @FXML private Label emailErrorLabel;
@@ -84,14 +92,18 @@ public class MainController {
     @FXML private Label trainingErrorLabel;
     @FXML private Label totalFeeErrorLabel;
     @FXML private Label paidAmountErrorLabel;
+    @FXML private Label paidAmountLabel;
+    @FXML private Label candidateFormTitleLabel;
     @FXML private ChoiceBox<String> statusChoice;
     @FXML private CheckBox certificateCheckBox;
     @FXML private RadioButton cashRadio;
     @FXML private RadioButton bankRadio;
     @FXML private RadioButton cardRadio;
+    @FXML private TitledPane paymentGroupPane;
     @FXML private Button trainingsButton;
     @FXML private Button paymentsButton;
     @FXML private Button certificatesButton;
+    @FXML private Button staffButton;
     @FXML private MenuButton languageMenuButton;
     @FXML private Label statusLabel;
     @FXML private Label totalCandidatesLabel;
@@ -113,10 +125,15 @@ public class MainController {
         prepareRoleAccess();
         setSidebarVisible(candidateFormPane, false);
         loadCandidates();
+        updateMissingTrainerAccountNoticeBar();
     }
 
     @FXML
     private void handleNewCandidate() {
+        if (SessionService.isTrainer()) {
+            showWarning(I18nService.get("access.denied.trainer"));
+            return;
+        }
         setSidebarVisible(candidateFormPane, true);
         clearForm();
         statusLabel.setText(I18nService.get("status.newCandidate"));
@@ -231,6 +248,10 @@ public class MainController {
 
     @FXML
     private void handleOpenTrainings() {
+        if (SessionService.isTrainer()) {
+            showWarning(I18nService.get("access.denied.trainer"));
+            return;
+        }
         SceneService.loadView("trainings-view.fxml", I18nService.get("training.title"));
     }
 
@@ -244,10 +265,20 @@ public class MainController {
 
     @FXML
     private void handleOpenCertificates() {
-        if (!ensureAdminAccess()) {
+        if (!SessionService.isAdmin() && !SessionService.isTrainer()) {
+            showWarning(I18nService.get("access.denied.staff"));
             return;
         }
         SceneService.loadView("certificates-view.fxml", I18nService.get("certificate.title"));
+    }
+
+    @FXML
+    private void handleOpenStaff() {
+        if (!SessionService.isAdmin()) {
+            showWarning(I18nService.get("access.denied.staff"));
+            return;
+        }
+        SceneService.loadView("staff-view.fxml", I18nService.get("staff.title"));
     }
 
     @FXML
@@ -388,16 +419,57 @@ public class MainController {
 
     private void prepareRoleAccess() {
         boolean admin = SessionService.isAdmin();
+        boolean staff = SessionService.isStaff();
+        boolean trainer = SessionService.isTrainer();
+        trainerTrainingLabel.setVisible(trainer);
+        trainerTrainingLabel.setManaged(trainer);
+        trainerTrainingComboBox.setVisible(trainer);
+        trainerTrainingComboBox.setManaged(trainer);
+        if (trainer) {
+            prepareTrainerTrainingFilter();
+        }
+        trainingsButton.setDisable(trainer);
         paymentsButton.setDisable(!admin);
-        certificatesButton.setDisable(!admin);
+        certificatesButton.setDisable(staff);
+        staffButton.setDisable(!admin);
+        staffButton.setVisible(admin);
+        staffButton.setManaged(admin);
         certificateCheckBox.setDisable(!admin);
         paidAmountField.setDisable(!admin);
+        paidAmountLabel.setVisible(admin);
+        paidAmountLabel.setManaged(admin);
+        paidAmountField.setVisible(admin);
+        paidAmountField.setManaged(admin);
+        paidAmountErrorLabel.setVisible(false);
+        paidAmountErrorLabel.setManaged(false);
+        paymentGroupPane.setVisible(admin);
+        paymentGroupPane.setManaged(admin);
         cashRadio.setDisable(!admin);
         bankRadio.setDisable(!admin);
         cardRadio.setDisable(!admin);
+        paidColumn.setVisible(admin);
+        balanceColumn.setVisible(admin);
+        dashboardTab.setDisable(!admin);
 
+        if (trainer) {
+            candidateFormTitleLabel.setText(I18nService.get("candidate.manage.title"));
+            firstNameField.setDisable(true);
+            lastNameField.setDisable(true);
+            emailField.setDisable(true);
+            phoneField.setDisable(true);
+            trainingComboBox.setDisable(true);
+            totalFeeField.setDisable(true);
+            certificateCheckBox.setDisable(true);
+        }
+        if (staff) {
+            statusChoice.setDisable(true);
+            totalFeeField.setDisable(true);
+        }
+
+        trainingsButton.setTooltip(new Tooltip(trainer ? I18nService.get("access.denied.trainer") : I18nService.get("nav.trainings")));
         paymentsButton.setTooltip(new Tooltip(admin ? I18nService.get("nav.payments") : I18nService.get("access.denied.staff")));
-        certificatesButton.setTooltip(new Tooltip(admin ? I18nService.get("nav.certificates") : I18nService.get("access.denied.staff")));
+        certificatesButton.setTooltip(new Tooltip(!staff ? I18nService.get("nav.certificates") : I18nService.get("access.denied.staff")));
+        staffButton.setTooltip(new Tooltip(admin ? I18nService.get("nav.staff") : I18nService.get("access.denied.staff")));
         certificateCheckBox.setTooltip(new Tooltip(admin ? I18nService.get("candidate.certificateIssued") : I18nService.get("access.denied.staff")));
         paidAmountField.setTooltip(new Tooltip(admin ? I18nService.get("candidate.paidAmount") : I18nService.get("access.denied.staff")));
 
@@ -407,6 +479,39 @@ public class MainController {
 
         applyLanguageButtonStyles();
         statusLabel.setText(String.format(I18nService.get("status.loggedRole"), SessionService.getCurrentRole()));
+    }
+
+    private void updateMissingTrainerAccountNoticeBar() {
+        if (trainerAccountNoticeBar == null || trainerAccountNoticeLabel == null) {
+            return;
+        }
+        if (!SessionService.isAdmin()) {
+            trainerAccountNoticeBar.setVisible(false);
+            trainerAccountNoticeBar.setManaged(false);
+            return;
+        }
+
+        var trainingsWithoutAccounts = trainingService.getTrainingsWithoutTrainerAccount();
+        if (trainingsWithoutAccounts.isEmpty()) {
+            trainerAccountNoticeBar.setVisible(false);
+            trainerAccountNoticeBar.setManaged(false);
+            return;
+        }
+
+        String trainerList = trainingsWithoutAccounts.stream()
+                .collect(Collectors.toMap(
+                        Training::getInstructor,
+                        Training::getName,
+                        (first, second) -> first + ", " + second
+                ))
+                .entrySet()
+                .stream()
+                .map(entry -> String.format("- %s (%s)", entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining("   "));
+
+        trainerAccountNoticeLabel.setText(String.format(I18nService.get("training.missingTrainerAccountsBanner"), trainerList));
+        trainerAccountNoticeBar.setVisible(true);
+        trainerAccountNoticeBar.setManaged(true);
     }
 
     private boolean ensureAdminAccess() {
@@ -456,7 +561,9 @@ public class MainController {
             }
             scene.getAccelerators().put(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), this::handleNewCandidate);
             scene.getAccelerators().put(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), this::handleSaveCandidate);
-            scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE), this::handleDeleteCandidate);
+            if (SessionService.isAdmin()) {
+                scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE), this::handleDeleteCandidate);
+            }
             scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F5), this::handleRefresh);
             scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F1), this::handleShowHelp);
         });
@@ -470,22 +577,66 @@ public class MainController {
         }
 
         candidates.setAll(loadedCandidates);
+        if (SessionService.isTrainer()
+                && trainerTrainingComboBox.getValue() != null
+                && !trainerTrainingComboBox.getValue().isBlank()) {
+            candidates.setAll(loadedCandidates.stream()
+                    .filter(candidate -> candidate.getTrainingName().equals(trainerTrainingComboBox.getValue()))
+                    .toList());
+        }
         candidatesTable.setItems(candidates);
         updateDashboard();
     }
 
+    private void prepareTrainerTrainingFilter() {
+        trainerTrainingComboBox.setItems(FXCollections.observableArrayList(
+                trainingService.getAllByTrainerUserId(SessionService.getCurrentUserId())
+                        .stream()
+                        .map(training -> training.getName())
+                        .toList()
+        ));
+        if (!trainerTrainingComboBox.getItems().isEmpty()) {
+            trainerTrainingComboBox.setValue(trainerTrainingComboBox.getItems().get(0));
+        }
+        trainerTrainingComboBox.valueProperty().addListener((observable, oldValue, value) -> loadCandidates());
+    }
+
     private CandidateRequestDto createRequestDto() {
+        Candidate selected = selectedCandidateId == null ? null : candidatesTable.getSelectionModel().getSelectedItem();
         return new CandidateRequestDto(
-                firstNameField.getText(),
-                lastNameField.getText(),
-                emailField.getText(),
-                phoneField.getText(),
-                trainingComboBox.getValue(),
-                statusChoice.getValue(),
-                parseMoney(totalFeeField.getText()),
+                SessionService.isTrainer() && selected != null ? selected.getFirstName() : firstNameField.getText(),
+                SessionService.isTrainer() && selected != null ? selected.getLastName() : lastNameField.getText(),
+                SessionService.isTrainer() && selected != null ? selected.getEmail() : emailField.getText(),
+                SessionService.isTrainer() && selected != null ? selected.getPhone() : phoneField.getText(),
+                SessionService.isTrainer() && selected != null ? selected.getTrainingName() : trainingComboBox.getValue(),
+                getStatusForRequest(selected),
+                getTotalFeeForRequest(selected),
                 getPaidAmountForRequest(),
                 getCertificateIssuedForRequest()
         );
+    }
+
+    private String getStatusForRequest(Candidate selected) {
+        if (SessionService.isTrainer()) {
+            return statusChoice.getValue();
+        }
+        if (SessionService.isStaff()) {
+            return selected == null ? "REGISTERED" : selected.getStatus().name();
+        }
+        return statusChoice.getValue();
+    }
+
+    private double getTotalFeeForRequest(Candidate selected) {
+        if (SessionService.isTrainer() && selected != null) {
+            return selected.getTotalFee();
+        }
+        if (SessionService.isStaff()) {
+            Double price = trainingService.findPriceByName(trainingComboBox.getValue());
+            if (price != null) {
+                return price;
+            }
+        }
+        return parseMoney(totalFeeField.getText());
     }
 
     private double getPaidAmountForRequest() {
@@ -507,6 +658,9 @@ public class MainController {
     }
 
     private boolean validateCandidateForm() {
+        if (SessionService.isTrainer()) {
+            return selectedCandidateId != null;
+        }
         boolean validFirstName = validateFirstNameField();
         boolean validLastName = validateLastNameField();
         boolean validEmail = validateEmailField();
@@ -527,7 +681,11 @@ public class MainController {
 
     private boolean validateNameField(Label errorLabel, TextField field) {
         String value = field.getText() == null ? "" : field.getText().trim();
-        boolean valid = !value.isEmpty() && value.matches(NAME_INPUT_PATTERN);
+        if (value.isEmpty()) {
+            setFieldError(errorLabel, field, "");
+            return false;
+        }
+        boolean valid = value.matches(NAME_INPUT_PATTERN);
         setFieldError(errorLabel, field, valid ? "" : I18nService.get("validation.name.letters"));
         return valid;
     }
