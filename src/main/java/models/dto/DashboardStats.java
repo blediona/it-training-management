@@ -16,19 +16,9 @@ public class DashboardStats {
         this.outstandingBalance = outstandingBalance;
     }
 
-    public int getTotalCandidates() {
-        return totalCandidates;
-    }
-    public int getActiveCandidates() {
-        return activeCandidates;
-    }
-    public int getCertifiedCandidates() {
-        return certifiedCandidates;
-    }
-    public double getTotalRevenue() {
-        return totalRevenue;
-    }
-    public double getOutstandingBalance() {
-        return outstandingBalance;
-    }
+    public int getTotalCandidates() { return totalCandidates; }
+    public int getActiveCandidates() { return activeCandidates; }
+    public int getCertifiedCandidates() { return certifiedCandidates; }
+    public double getTotalRevenue() { return totalRevenue; }
+    public double getOutstandingBalance() { return outstandingBalance; }
 }
