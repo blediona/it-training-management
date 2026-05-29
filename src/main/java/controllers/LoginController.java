@@ -20,6 +20,7 @@ public class LoginController {
 
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
+    @FXML private TextField visiblePasswordField;
     @FXML private Label messageLabel;
     @FXML private MenuButton languageMenuButton;
 
@@ -27,8 +28,17 @@ public class LoginController {
     private void initialize() {
         usernameField.setText(preservedUsername);
         passwordField.setText(preservedPassword);
+        visiblePasswordField.setText(preservedPassword);
+        visiblePasswordField.textProperty().bindBidirectional(passwordField.textProperty());
+        visiblePasswordField.setVisible(false);
+        visiblePasswordField.setManaged(false);
         messageLabel.setText(preservedMessage);
         applyLanguageButtonStyles();
+    }
+
+    @FXML
+    private void handleTogglePasswordVisibility() {
+        togglePasswordVisibility(passwordField, visiblePasswordField);
     }
 
     @FXML
@@ -47,12 +57,6 @@ public class LoginController {
 
         this.messageLabel.setText(response.getMessage());
         preservedMessage = response.getMessage();
-    }
-
-    @FXML
-    private void handleGoToSignup() {
-        clearPreservedLoginState();
-        SceneService.loadView("signup-view.fxml", I18nService.get("app.title"));
     }
 
     @FXML
@@ -92,5 +96,13 @@ public class LoginController {
         preservedUsername = "";
         preservedPassword = "";
         preservedMessage = "";
+    }
+
+    private void togglePasswordVisibility(PasswordField hiddenField, TextField visibleField) {
+        boolean showPassword = !visibleField.isVisible();
+        visibleField.setVisible(showPassword);
+        visibleField.setManaged(showPassword);
+        hiddenField.setVisible(!showPassword);
+        hiddenField.setManaged(!showPassword);
     }
 }
