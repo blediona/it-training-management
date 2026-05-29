@@ -48,6 +48,7 @@ public class PaymentController {
     @FXML private Label totalRevenueLabel;
     @FXML private Label totalBalanceLabel;
     @FXML private Label monthPaymentsLabel;
+    @FXML private Button staffButton;
     @FXML private MenuButton languageMenuButton;
     @FXML private TableView<Payment> paymentsTable;
     @FXML private TableColumn<Payment, Integer> idColumn;
@@ -58,6 +59,11 @@ public class PaymentController {
 
     @FXML
     private void initialize() {
+        if (!SessionService.isAdmin()) {
+            showWarning(I18nService.get("access.denied.staff"));
+            SceneService.loadView("main-view.fxml", I18nService.get("app.title"));
+            return;
+        }
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         candidateIdColumn.setCellValueFactory(new PropertyValueFactory<>("candidateId"));
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
@@ -116,6 +122,10 @@ public class PaymentController {
 
     @FXML
     private void handleOpenTrainings() {
+        if (SessionService.isTrainer()) {
+            showWarning(I18nService.get("access.denied.trainer"));
+            return;
+        }
         SceneService.loadView("trainings-view.fxml", I18nService.get("training.title"));
     }
 
@@ -142,7 +152,20 @@ public class PaymentController {
 
     @FXML
     private void handleOpenCertificates() {
+        if (!SessionService.isAdmin()) {
+            showWarning(I18nService.get("access.denied.staff"));
+            return;
+        }
         SceneService.loadView("certificates-view.fxml", I18nService.get("certificate.title"));
+    }
+
+    @FXML
+    private void handleOpenStaff() {
+        if (!SessionService.isAdmin()) {
+            showWarning(I18nService.get("access.denied.staff"));
+            return;
+        }
+        SceneService.loadView("staff-view.fxml", I18nService.get("staff.title"));
     }
 
     @FXML

@@ -13,6 +13,9 @@ public class PaymentService {
     private final CandidateRepository candidateRepository = new CandidateRepository();
 
     public Payment save(int candidateId, double amount, LocalDate paymentDate, String method) {
+        if (!SessionService.isAdmin()) {
+            throw new IllegalArgumentException(I18nService.get("access.denied.staff"));
+        }
         Candidate candidate = candidateRepository.getById(candidateId);
         if (candidate == null) {
             throw new IllegalArgumentException(I18nService.get("validation.candidate.missing"));
@@ -34,8 +37,12 @@ public class PaymentService {
         candidateRepository.addPaymentAmount(candidateId, amount);
         return payment;
     }
-
-    public ArrayList<Payment> getAll() {
+     public ArrayList<Payment> getAll() {
+        if (!SessionService.isAdmin()) {
+            return new ArrayList<>();
+        }
         return paymentRepository.getAll();
     }
+
+   
 }
