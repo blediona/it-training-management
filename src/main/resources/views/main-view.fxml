@@ -36,6 +36,7 @@
                 <Button fx:id="trainingsButton" onAction="#handleOpenTrainings" text="%nav.trainings" styleClass="nav-button"/>
                 <Button fx:id="paymentsButton" onAction="#handleOpenPayments" text="%nav.payments" styleClass="nav-button"/>
                 <Button fx:id="certificatesButton" onAction="#handleOpenCertificates" text="%nav.certificates" styleClass="nav-button"/>
+                <Button fx:id="staffButton" onAction="#handleOpenStaff" text="%nav.staff" styleClass="nav-button"/>
                 <Button onAction="#handleShowHelp" text="%menu.help" styleClass="nav-button"/>
                 <MenuButton fx:id="languageMenuButton" text="%menu.language" styleClass="nav-button">
                     <items>
@@ -68,6 +69,9 @@
             <ToolBar styleClass="app-toolbar">
                 <Button onAction="#handleToggleCandidateForm" text="%action.toggleSidebar" styleClass="secondary-button"/>
                 <Separator/>
+                <Label fx:id="trainerTrainingLabel" text="%trainer.selectTraining"/>
+                <ComboBox fx:id="trainerTrainingComboBox" prefWidth="240"/>
+                <Separator/>
                 <TextField fx:id="searchField" onAction="#handleSearch" prefWidth="360" promptText="%search.prompt"/>
                 <Button onAction="#handleSearch" text="%action.search" styleClass="secondary-button"/>
             </ToolBar>
@@ -84,7 +88,7 @@
                                 <padding>
                                     <Insets bottom="18" left="18" right="18" top="18"/>
                                 </padding>
-                                <Label text="%candidate.form.title" styleClass="section-title">
+                                <Label fx:id="candidateFormTitleLabel" text="%candidate.form.title" styleClass="section-title">
                                     <font>
                                         <Font size="20"/>
                                     </font>
@@ -122,14 +126,14 @@
                                         <Label fx:id="totalFeeErrorLabel" visible="false" managed="false" styleClass="error-text"/>
                                         <TextField fx:id="totalFeeField" promptText="350"/>
                                     </VBox>
-                                    <Label text="%candidate.paidAmount" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+                                    <Label fx:id="paidAmountLabel" text="%candidate.paidAmount" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
                                     <VBox spacing="3" GridPane.columnIndex="1" GridPane.rowIndex="7">
                                         <Label fx:id="paidAmountErrorLabel" visible="false" managed="false" styleClass="error-text"/>
                                         <TextField fx:id="paidAmountField" promptText="0"/>
                                     </VBox>
                                 </GridPane>
 
-                                <TitledPane expanded="true" text="%payment.group">
+                                <TitledPane fx:id="paymentGroupPane" expanded="true" text="%payment.group">
                                     <VBox spacing="8">
                                         <padding>
                                             <Insets bottom="10" left="10" right="10" top="10"/>
@@ -227,11 +231,20 @@
     </center>
 
     <bottom>
-        <HBox alignment="CENTER_LEFT" prefHeight="40" styleClass="status-bar">
-            <padding>
-                <Insets left="18" right="18"/>
-            </padding>
-            <Label fx:id="statusLabel" text="%status.ready" textFill="white"/>
-        </HBox>
+        <VBox>
+            <HBox fx:id="trainerAccountNoticeBar" alignment="CENTER_LEFT" managed="false" visible="false" spacing="12" styleClass="trainer-account-notice">
+                <padding>
+                    <Insets bottom="8" left="18" right="18" top="8"/>
+                </padding>
+                <Label fx:id="trainerAccountNoticeLabel" wrapText="true" HBox.hgrow="ALWAYS"/>
+                <Button onAction="#handleOpenTrainings" text="%training.resolveTrainerAccounts" styleClass="notice-button"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" prefHeight="40" styleClass="status-bar">
+                <padding>
+                    <Insets left="18" right="18"/>
+                </padding>
+                <Label fx:id="statusLabel" text="%status.ready" textFill="white"/>
+            </HBox>
+        </VBox>
     </bottom>
 </BorderPane>
