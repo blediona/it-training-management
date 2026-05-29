@@ -28,6 +28,7 @@
                 <Button onAction="#handleOpenTrainings" text="%nav.trainings" styleClass="nav-button-active"/>
                 <Button fx:id="paymentsButton" onAction="#handleOpenPayments" text="%nav.payments" styleClass="nav-button"/>
                 <Button fx:id="certificatesButton" onAction="#handleOpenCertificates" text="%nav.certificates" styleClass="nav-button"/>
+                <Button fx:id="staffButton" onAction="#handleOpenStaff" text="%nav.staff" styleClass="nav-button"/>
                 <Button onAction="#handleShowHelp" text="%menu.help" styleClass="nav-button"/>
                 <MenuButton fx:id="languageMenuButton" text="%menu.language" styleClass="nav-button">
                     <items>
@@ -61,6 +62,8 @@
                 <Separator/>
                 <TextField fx:id="searchField" onAction="#handleSearch" prefWidth="360" promptText="%search.prompt"/>
                 <Button onAction="#handleSearch" text="%action.search" styleClass="secondary-button"/>
+                <Separator/>
+                <Button fx:id="createTrainerAccountButton" onAction="#handleCreateTrainerAccount" text="%training.createTrainerAccount" styleClass="secondary-button"/>
             </ToolBar>
         </VBox>
     </top>
@@ -81,6 +84,7 @@
                     <Label fx:id="instructorErrorLabel" visible="false" managed="false" styleClass="error-text"/>
                     <TextField fx:id="instructorField" promptText="%training.instructor"/>
                 </VBox>
+                <TextField fx:id="instructorEmailField" promptText="%training.instructorEmail"/>
                 <TextField fx:id="priceField" promptText="%training.price"/>
                 <ComboBox fx:id="levelComboBox" prefWidth="280" promptText="%training.level"/>
                 <TextArea fx:id="descriptionArea" prefHeight="96" promptText="%training.description"/>
