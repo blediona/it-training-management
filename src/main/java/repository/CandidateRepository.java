@@ -83,6 +83,67 @@ public class CandidateRepository extends BaseRepository<Candidate> {
         return candidates;
     }
 
+    public ArrayList<Candidate> getAllByTrainerUserId(int trainerUserId) {
+        String query = """
+                SELECT c.*, t.name AS training_name
+                FROM candidates c
+                INNER JOIN trainings t ON t.id = c.training_id
+                WHERE t.trainer_user_id = ?
+                ORDER BY c.id ASC
+                """;
+        ArrayList<Candidate> candidates = new ArrayList<>();
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setInt(1, trainerUserId);
+            try (ResultSet res = pstm.executeQuery()) {
+                while (res.next()) {
+                    Candidate candidate = getMapper().getFromResultSet(res);
+                    if (candidate != null) {
+                        candidates.add(candidate);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return candidates;
+    }
+
+    public DashboardStats getDashboardStatsByTrainerUserId(int trainerUserId) {
+        String query = """
+                SELECT COUNT(*) AS total_candidates,
+                       SUM(CASE WHEN c.status IN ('REGISTERED','IN_TRAINING') THEN 1 ELSE 0 END) AS active_candidates,
+                       SUM(CASE WHEN c.certificate_issued = 1 THEN 1 ELSE 0 END) AS certified_candidates,
+                       0 AS total_revenue,
+                       0 AS outstanding_balance
+                FROM candidates c
+                INNER JOIN trainings t ON t.id = c.training_id
+                WHERE t.trainer_user_id = ?
+                """;
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setInt(1, trainerUserId);
+            try (ResultSet res = pstm.executeQuery()) {
+                if (res.next()) {
+                    return new DashboardStats(
+                            res.getInt("total_candidates"),
+                            res.getInt("active_candidates"),
+                            res.getInt("certified_candidates"),
+                            res.getDouble("total_revenue"),
+                            res.getDouble("outstanding_balance")
+                    );
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return new DashboardStats(0, 0, 0, 0, 0);
+    }
+
     public DashboardStats getDashboardStats() {
         String query = """
                 SELECT COUNT(*) AS total_candidates,
@@ -160,6 +221,36 @@ public class CandidateRepository extends BaseRepository<Candidate> {
         return candidates;
     }
 
+    public ArrayList<Candidate> getReadyForCertificationByTrainerUserId(int trainerUserId) {
+        String query = """
+                SELECT c.*, t.name AS training_name
+                FROM candidates c
+                INNER JOIN trainings t ON t.id = c.training_id
+                WHERE c.status = 'COMPLETED'
+                  AND c.certificate_issued = 0
+                  AND t.trainer_user_id = ?
+                ORDER BY c.id ASC
+                """;
+        ArrayList<Candidate> candidates = new ArrayList<>();
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setInt(1, trainerUserId);
+            try (ResultSet res = pstm.executeQuery()) {
+                while (res.next()) {
+                    Candidate candidate = getMapper().getFromResultSet(res);
+                    if (candidate != null) {
+                        candidates.add(candidate);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return candidates;
+    }
+
     @Override
     public Candidate getById(int id) {
         String query = """
@@ -207,6 +298,43 @@ public class CandidateRepository extends BaseRepository<Candidate> {
                 PreparedStatement pstm = connection.prepareStatement(query)
         ) {
             pstm.setInt(1, candidateId);
+            return pstm.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean belongsToTrainer(int candidateId, int trainerUserId) {
+        String query = """
+                SELECT COUNT(*)
+                FROM candidates c
+                INNER JOIN trainings t ON t.id = c.training_id
+                WHERE c.id = ? AND t.trainer_user_id = ?
+                """;
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setInt(1, candidateId);
+            pstm.setInt(2, trainerUserId);
+            try (ResultSet res = pstm.executeQuery()) {
+                return res.next() && res.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean updateStatus(int candidateId, String status) {
+        String query = "UPDATE candidates SET status = ? WHERE id = ?";
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setString(1, status);
+            pstm.setInt(2, candidateId);
             return pstm.executeUpdate() > 0;
         } catch (Exception e) {
             System.out.println(e.getMessage());
