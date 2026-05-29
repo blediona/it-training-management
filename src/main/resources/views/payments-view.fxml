@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane prefHeight="760" prefWidth="1180"
+            styleClass="app-root"
+            stylesheets="@../styles/app.css"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.PaymentController">
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" prefHeight="72" spacing="18" styleClass="app-header">
+                <padding><Insets left="28" right="28"/></padding>
+                <Label text="%payment.title" styleClass="brand-title">
+                    <font><Font size="26"/></font>
+                </Label>
+                <Label text="%payment.subtitle" styleClass="brand-subtitle"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#handleOpenDashboard" text="%nav.dashboard" styleClass="nav-button"/>
+                <Button onAction="#handleOpenTrainings" text="%nav.trainings" styleClass="nav-button"/>
+                <Button onAction="#handleOpenPayments" text="%nav.payments" styleClass="nav-button-active"/>
+                <Button onAction="#handleOpenCertificates" text="%nav.certificates" styleClass="nav-button"/>
+                <Button fx:id="staffButton" onAction="#handleOpenStaff" text="%nav.staff" styleClass="nav-button"/>
+                <Button onAction="#handleShowHelp" text="%menu.help" styleClass="nav-button"/>
+                <MenuButton fx:id="languageMenuButton" text="%menu.language" styleClass="nav-button">
+                    <items>
+                        <MenuItem onAction="#handleAlbanianLanguage" text="Shqip">
+                            <graphic>
+                                <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                    <image><Image url="@../images/flags/al.png"/></image>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                        <MenuItem onAction="#handleEnglishLanguage" text="English">
+                            <graphic>
+                                <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                    <image><Image url="@../images/flags/gb.png"/></image>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                        <MenuItem onAction="#handleGermanLanguage" text="Deutsch">
+                            <graphic>
+                                <ImageView fitHeight="18" fitWidth="26" preserveRatio="true">
+                                    <image><Image url="@../images/flags/de.png"/></image>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                    </items>
+                </MenuButton>
+                <Button onAction="#handleLogout" text="%nav.logout" styleClass="nav-button-active"/>
+            </HBox>
+            <ToolBar styleClass="app-toolbar">
+                <Button onAction="#handleTogglePaymentForm" text="%action.toggleSidebar" styleClass="secondary-button"/>
+                <Separator/>
+                <TextField fx:id="searchField" onAction="#handleSearch" prefWidth="360" promptText="%search.prompt"/>
+                <Button onAction="#handleSearch" text="%action.search" styleClass="secondary-button"/>
+            </ToolBar>
+        </VBox>
+    </top>
+
+    <center>
+        <HBox spacing="18">
+            <padding><Insets bottom="24" left="24" right="24" top="24"/></padding>
+            <VBox fx:id="paymentFormPane" prefWidth="330" spacing="14" styleClass="surface">
+                <padding><Insets bottom="22" left="22" right="22" top="22"/></padding>
+                <Label text="%payment.register" styleClass="section-title">
+                    <font><Font size="22"/></font>
+                </Label>
+                <TextField fx:id="candidateIdField" promptText="%payment.candidateId"/>
+                <TextField fx:id="amountField" promptText="%payment.amount"/>
+                <DatePicker fx:id="paymentDatePicker" promptText="%payment.date"/>
+                <ComboBox fx:id="methodComboBox" prefWidth="286" promptText="%payment.method"/>
+                <TextArea prefHeight="110" promptText="%payment.notes"/>
+                <Button onAction="#handleSavePayment" prefHeight="42" prefWidth="286" text="%payment.save" styleClass="primary-button"/>
+            </VBox>
+
+            <VBox spacing="14" HBox.hgrow="ALWAYS">
+                <HBox spacing="14">
+                    <VBox prefWidth="220" onMouseClicked="#handleShowPaidCandidates" styleClass="metric-card">
+                        <Label text="%payment.totalRevenue" styleClass="metric-label"/>
+                        <Label fx:id="totalRevenueLabel" text="0 EUR" styleClass="metric-value"/>
+                    </VBox>
+                    <VBox prefWidth="220" onMouseClicked="#handleShowDebtCandidates" styleClass="metric-card">
+                        <Label text="%payment.totalBalance" styleClass="metric-label"/>
+                        <Label fx:id="totalBalanceLabel" text="0 EUR" styleClass="metric-value"/>
+                    </VBox>
+                    <VBox prefWidth="220" onMouseClicked="#handleShowMonthlyPayments" styleClass="metric-card">
+                        <Label text="%payment.monthCount" styleClass="metric-label"/>
+                        <Label fx:id="monthPaymentsLabel" text="0" styleClass="metric-value"/>
+                    </VBox>
+                </HBox>
+                <TableView fx:id="paymentsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="idColumn" prefWidth="70" text="ID"/>
+                        <TableColumn fx:id="candidateIdColumn" prefWidth="130" text="%payment.candidateId"/>
+                        <TableColumn fx:id="amountColumn" prefWidth="150" text="%payment.amount"/>
+                        <TableColumn fx:id="paymentDateColumn" prefWidth="180" text="%payment.date"/>
+                        <TableColumn fx:id="methodColumn" prefWidth="180" text="%payment.method"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>
