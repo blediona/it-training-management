@@ -72,6 +72,14 @@
     -fx-cursor: hand;
 }
 
+.icon-button {
+    -fx-background-color: #e7eef3;
+    -fx-text-fill: #183247;
+    -fx-font-weight: 700;
+    -fx-background-radius: 7;
+    -fx-cursor: hand;
+}
+
 .danger-button {
     -fx-background-color: #fde8e8;
     -fx-text-fill: #9b1c1c;
@@ -166,6 +174,24 @@
     -fx-background-color: #183247;
 }
 
+.trainer-account-notice {
+    -fx-background-color: #fff3cd;
+    -fx-border-color: #f2c94c;
+    -fx-border-width: 1 0 0 0;
+}
+
+.trainer-account-notice .label {
+    -fx-text-fill: #5f4300;
+    -fx-font-weight: 700;
+}
+
+.notice-button {
+    -fx-background-color: #7a5700;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+    -fx-background-radius: 7;
+}
+
 .ai-note {
     -fx-background-color: #e4f1f2;
     -fx-text-fill: #155e66;
@@ -214,6 +240,12 @@
 .table-view .column-header,
 .table-view .filler {
     -fx-background-color: transparent;
+}
+
+.table-view .table-cell.missing-trainer-account-cell {
+    -fx-background-color: #d9e4ea;
+    -fx-text-fill: #183247;
+    -fx-font-weight: 700;
 }
 
 .error-text {
