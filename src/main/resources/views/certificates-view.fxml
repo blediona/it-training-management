@@ -26,6 +26,7 @@
                 <Button onAction="#handleOpenTrainings" text="%nav.trainings" styleClass="nav-button"/>
                 <Button onAction="#handleOpenPayments" text="%nav.payments" styleClass="nav-button"/>
                 <Button onAction="#handleOpenCertificates" text="%nav.certificates" styleClass="nav-button-active"/>
+                <Button fx:id="staffButton" onAction="#handleOpenStaff" text="%nav.staff" styleClass="nav-button"/>
                 <Button onAction="#handleShowHelp" text="%menu.help" styleClass="nav-button"/>
                 <MenuButton fx:id="languageMenuButton" text="%menu.language" styleClass="nav-button">
                     <items>
