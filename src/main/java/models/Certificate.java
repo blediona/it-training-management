@@ -44,19 +44,9 @@ public class Certificate {
         }
     }
 
-    public int getId() {
-        return id;
-    }
-    public int getCandidateId() {
-        return candidateId;
-    }
-    public String getCertificateNumber() {
-        return certificateNumber;
-    }
-    public LocalDate getIssuedDate() {
-        return issuedDate;
-    }
-    public String getNotes() {
-        return notes == null ? "" : notes;
-    }
+    public int getId() { return id; }
+    public int getCandidateId() { return candidateId; }
+    public String getCertificateNumber() { return certificateNumber; }
+    public LocalDate getIssuedDate() { return issuedDate; }
+    public String getNotes() { return notes == null ? "" : notes; }
 }
