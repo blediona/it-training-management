@@ -39,6 +39,7 @@ import services.CertificateService;
 import services.I18nService;
 import services.SceneService;
 import services.SessionService;
+import services.TrainingService;
 
 import java.time.LocalDate;
 import java.io.File;
@@ -52,6 +53,7 @@ public class CertificateController {
     private static final String INTEGER_INPUT_PATTERN = "\\d*";
     private final CertificateService certificateService = new CertificateService();
     private final CandidateService candidateService = new CandidateService();
+    private final TrainingService trainingService = new TrainingService();
     private final ObservableList<Certificate> certificates = FXCollections.observableArrayList();
     private final ObservableList<Candidate> readyCandidates = FXCollections.observableArrayList();
 
@@ -63,6 +65,7 @@ public class CertificateController {
     @FXML private TextArea notesArea;
     @FXML private Label certifiedCountLabel;
     @FXML private Label readyCountLabel;
+    @FXML private Button staffButton;
     @FXML private MenuButton languageMenuButton;
     @FXML private TableView<Certificate> certificatesTable;
     @FXML private TableColumn<Certificate, Integer> idColumn;
@@ -77,6 +80,11 @@ public class CertificateController {
 
     @FXML
     private void initialize() {
+        if (SessionService.isStaff()) {
+            showWarning(I18nService.get("access.denied.staff"));
+            SceneService.loadView("main-view.fxml", I18nService.get("app.title"));
+            return;
+        }
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         candidateIdColumn.setCellValueFactory(new PropertyValueFactory<>("candidateId"));
         certificateNumberColumn.setCellValueFactory(new PropertyValueFactory<>("certificateNumber"));
@@ -97,6 +105,8 @@ public class CertificateController {
         issuedDatePicker.setValue(LocalDate.now());
         installIntegerFormatter(candidateIdField);
         setSidebarVisible(certificateFormPane, false);
+        staffButton.setVisible(SessionService.isAdmin());
+        staffButton.setManaged(SessionService.isAdmin());
         applyLanguageButtonStyles();
         loadCertificates();
     }
@@ -141,17 +151,34 @@ public class CertificateController {
 
     @FXML
     private void handleOpenTrainings() {
+        if (SessionService.isTrainer()) {
+            showWarning(I18nService.get("access.denied.trainer"));
+            return;
+        }
         SceneService.loadView("trainings-view.fxml", I18nService.get("training.title"));
     }
 
     @FXML
     private void handleOpenPayments() {
+        if (!SessionService.isAdmin()) {
+            showWarning(I18nService.get("access.denied.staff"));
+            return;
+        }
         SceneService.loadView("payments-view.fxml", I18nService.get("payment.title"));
     }
 
     @FXML
     private void handleOpenCertificates() {
         loadCertificates();
+    }
+
+    @FXML
+    private void handleOpenStaff() {
+        if (!SessionService.isAdmin()) {
+            showWarning(I18nService.get("access.denied.staff"));
+            return;
+        }
+        SceneService.loadView("staff-view.fxml", I18nService.get("staff.title"));
     }
 
     @FXML
@@ -381,9 +408,14 @@ public class CertificateController {
         addCenteredText(pane, I18nService.get("certificate.number") + ": " + certificate.getCertificateNumber(), 500, 515, 13, Font.font("Helvetica", 13), 0, "#292929");
 
         addSealShape(pane);
-        addSignatureShape(pane, 140, 592, "Training Center");
+        addSignatureShape(pane, 140, 592, getTrainerSignature(certificate.getCandidateId()));
         addSignatureShape(pane, 700, 592, I18nService.get("certificate.date") + ": " + certificate.getIssuedDate());
         return pane;
+    }
+
+    private String getTrainerSignature(int candidateId) {
+        String instructor = trainingService.findInstructorByCandidateId(candidateId);
+        return instructor == null || instructor.isBlank() ? "Training Center" : instructor;
     }
 
     private String getCertificateNotes(Certificate certificate) {
@@ -465,7 +497,7 @@ public class CertificateController {
         appendCenteredText(content, I18nService.get("certificate.number") + ": " + certificate.getCertificateNumber(), 421, 202, 10, "F4", 0);
 
         appendSeal(content);
-        appendSignature(content, 120, 126, "Training Center");
+        appendSignature(content, 120, 126, getTrainerSignature(certificate.getCandidateId()));
         appendSignature(content, 560, 126, I18nService.get("certificate.date") + ": " + certificate.getIssuedDate());
 
         return createSimplePdf(content.toString());
