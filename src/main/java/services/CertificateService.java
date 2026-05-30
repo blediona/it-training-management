@@ -2,6 +2,7 @@ package services;
 
 import models.Certificate;
 import models.Candidate;
+import models.CandidateStatus;
 import repository.CandidateRepository;
 import repository.CertificateRepository;
 
@@ -13,8 +14,18 @@ public class CertificateService {
     private final CandidateRepository candidateRepository = new CandidateRepository();
 
     public Certificate save(int candidateId, String certificateNumber, LocalDate issuedDate, String notes) {
-        if (candidateRepository.getById(candidateId) == null) {
+        if (SessionService.isStaff()) {
+            throw new IllegalArgumentException(I18nService.get("access.denied.staff"));
+        }
+        Candidate candidate = candidateRepository.getById(candidateId);
+        if (candidate == null) {
             throw new IllegalArgumentException(I18nService.get("validation.candidate.missing"));
+        }
+        if (SessionService.isTrainer() && !candidateRepository.belongsToTrainer(candidateId, SessionService.getCurrentUserId())) {
+            throw new IllegalArgumentException(I18nService.get("access.denied.trainer"));
+        }
+        if (candidate.getStatus() != CandidateStatus.COMPLETED) {
+            throw new IllegalArgumentException(I18nService.get("validation.certificate.notReady"));
         }
         if (certificateNumber == null || certificateNumber.isBlank() || issuedDate == null) {
             throw new IllegalArgumentException(I18nService.get("validation.required"));
@@ -35,10 +46,16 @@ public class CertificateService {
     }
 
     public ArrayList<Certificate> getAll() {
+        if (SessionService.isTrainer()) {
+            return certificateRepository.getAllByTrainerUserId(SessionService.getCurrentUserId());
+        }
         return certificateRepository.getAll();
     }
 
     public ArrayList<Candidate> getReadyForCertification() {
+        if (SessionService.isTrainer()) {
+            return candidateRepository.getReadyForCertificationByTrainerUserId(SessionService.getCurrentUserId());
+        }
         return candidateRepository.getReadyForCertification();
     }
 }
