@@ -15,6 +15,7 @@ import java.util.Optional;
 public class HelpController {
     @FXML private Button paymentsButton;
     @FXML private Button certificatesButton;
+    @FXML private Button staffButton;
     @FXML private MenuButton languageMenuButton;
 
     @FXML
@@ -39,6 +40,10 @@ public class HelpController {
 
     @FXML
     private void handleOpenTrainings() {
+        if (SessionService.isTrainer()) {
+            showWarning(I18nService.get("access.denied.trainer"));
+            return;
+        }
         SceneService.loadView("trainings-view.fxml", I18nService.get("training.title"));
     }
 
@@ -52,10 +57,19 @@ public class HelpController {
 
     @FXML
     private void handleOpenCertificates() {
-        if (!ensureAdminAccess()) {
+        if (SessionService.isStaff()) {
+            showWarning(I18nService.get("access.denied.staff"));
             return;
         }
         SceneService.loadView("certificates-view.fxml", I18nService.get("certificate.title"));
+    }
+
+    @FXML
+    private void handleOpenStaff() {
+        if (!ensureAdminAccess()) {
+            return;
+        }
+        SceneService.loadView("staff-view.fxml", I18nService.get("staff.title"));
     }
 
     @FXML
@@ -95,10 +109,15 @@ public class HelpController {
 
     private void prepareRoleAccess() {
         boolean admin = SessionService.isAdmin();
+        boolean staff = SessionService.isStaff();
         paymentsButton.setDisable(!admin);
-        certificatesButton.setDisable(!admin);
+        certificatesButton.setDisable(staff);
+        staffButton.setDisable(!admin);
+        staffButton.setVisible(admin);
+        staffButton.setManaged(admin);
         paymentsButton.setTooltip(new Tooltip(admin ? I18nService.get("nav.payments") : I18nService.get("access.denied.staff")));
-        certificatesButton.setTooltip(new Tooltip(admin ? I18nService.get("nav.certificates") : I18nService.get("access.denied.staff")));
+        certificatesButton.setTooltip(new Tooltip(!staff ? I18nService.get("nav.certificates") : I18nService.get("access.denied.staff")));
+        staffButton.setTooltip(new Tooltip(admin ? I18nService.get("nav.staff") : I18nService.get("access.denied.staff")));
     }
 
     private void applyLanguageButtonStyles() {
