@@ -14,8 +14,20 @@ public class ResetPasswordController {
     @FXML private TextField emailField;
     @FXML private TextField tokenField;
     @FXML private PasswordField newPasswordField;
+    @FXML private TextField visibleNewPasswordField;
     @FXML private PasswordField confirmPasswordField;
+    @FXML private TextField visibleConfirmPasswordField;
     @FXML private Label messageLabel;
+
+    @FXML
+    private void initialize() {
+        visibleNewPasswordField.textProperty().bindBidirectional(newPasswordField.textProperty());
+        visibleConfirmPasswordField.textProperty().bindBidirectional(confirmPasswordField.textProperty());
+        visibleNewPasswordField.setVisible(false);
+        visibleNewPasswordField.setManaged(false);
+        visibleConfirmPasswordField.setVisible(false);
+        visibleConfirmPasswordField.setManaged(false);
+    }
 
     @FXML
     private void handleSendResetCode() {
@@ -46,6 +58,16 @@ public class ResetPasswordController {
     }
 
     @FXML
+    private void handleToggleNewPasswordVisibility() {
+        togglePasswordVisibility(newPasswordField, visibleNewPasswordField);
+    }
+
+    @FXML
+    private void handleToggleConfirmPasswordVisibility() {
+        togglePasswordVisibility(confirmPasswordField, visibleConfirmPasswordField);
+    }
+
+    @FXML
     private void handleBackToLogin() {
         SceneService.loadView("login-view.fxml", I18nService.get("app.title"));
     }
@@ -54,5 +76,13 @@ public class ResetPasswordController {
         messageLabel.setText(message);
         messageLabel.getStyleClass().removeAll("success-text", "error-text");
         messageLabel.getStyleClass().add(success ? "success-text" : "error-text");
+    }
+
+    private void togglePasswordVisibility(PasswordField hiddenField, TextField visibleField) {
+        boolean showPassword = !visibleField.isVisible();
+        visibleField.setVisible(showPassword);
+        visibleField.setManaged(showPassword);
+        hiddenField.setVisible(!showPassword);
+        hiddenField.setManaged(!showPassword);
     }
 }
