@@ -44,6 +44,32 @@ public class CertificateRepository {
         return certificates;
     }
 
+    public ArrayList<Certificate> getAllByTrainerUserId(int trainerUserId) {
+        String query = """
+                SELECT cert.*
+                FROM certificates cert
+                INNER JOIN candidates c ON c.id = cert.candidate_id
+                INNER JOIN trainings t ON t.id = c.training_id
+                WHERE t.trainer_user_id = ?
+                ORDER BY cert.issued_date DESC
+                """;
+        ArrayList<Certificate> certificates = new ArrayList<>();
+        try (
+                Connection connection = DatabaseService.getConnection();
+                PreparedStatement pstm = connection.prepareStatement(query)
+        ) {
+            pstm.setInt(1, trainerUserId);
+            try (ResultSet res = pstm.executeQuery()) {
+                while (res.next()) {
+                    certificates.add(Certificate.getFromResultSet(res));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return certificates;
+    }
+
     public boolean existsByCertificateNumber(String certificateNumber) {
         String query = "SELECT COUNT(*) FROM certificates WHERE LOWER(certificate_number) = LOWER(?)";
         try (
