@@ -5,6 +5,7 @@ module com.ittraining.management {
     requires javafx.graphics;
     requires java.sql;
     requires mysql.connector.j;
+    requires jakarta.mail;
 
     opens app to javafx.fxml;
     opens controllers to javafx.fxml;
